@@ -31,7 +31,7 @@ func CreateConsumer[T any, Attributes map[string]string](config providers.Config
 		return nil, fmt.Errorf("error decoding block spec: %v", err)
 	}
 
-	topicName, subscriptionName, err := getTopicSubscription(blockSpec, resourceName)
+	topicName, subscriptionName, err := getTopicSubscription(instance, blockSpec, resourceName)
 	if err != nil {
 		return nil, err
 	}
@@ -76,11 +76,23 @@ func CreateConsumer[T any, Attributes map[string]string](config providers.Config
 	}, nil
 }
 
-func getTopicSubscription(spec *PubSubBlockDefinition, resourceName string) (string, string, error) {
+func getTopicSubscription(instance *providers.BlockInstanceDetails, spec *PubSubBlockDefinition, resourceName string) (string, string, error) {
 	var provider PubSubTopicSubscriptionSpec
 
+	var providerResourceName = ""
+
+	for _, connection := range instance.Connections {
+		if connection.Consumer.ResourceName == resourceName {
+			providerResourceName = connection.Provider.ResourceName
+		}
+	}
+
+	if providerResourceName == "" {
+		return "", "", errors.New("no provider resource found")
+	}
+
 	for _, b := range spec.Spec.Providers {
-		if b.Metadata.Name == resourceName {
+		if b.Metadata.Name == providerResourceName {
 			provider = b.Spec
 			break
 		}

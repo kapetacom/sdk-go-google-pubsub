@@ -13,6 +13,7 @@ import (
 
 type Publisher[DataType any, Headers map[string]string] struct {
 	topic *pubsub.Topic
+	client *pubsub.Client
 }
 
 type PublisherPayload[DataType any, Headers map[string]string] struct {
@@ -49,6 +50,7 @@ func CreatePublisher[DataType any, Headers map[string]string](config providers.C
 
 	return &Publisher[DataType, Headers]{
 		topic: topic,
+		client: client,
 	}, nil
 }
 
@@ -71,4 +73,8 @@ func (p *Publisher[DataType, Headers]) Publish(payload PublisherPayload[DataType
 	}
 
 	return serverID, nil
+}
+
+func (p *Publisher[DataType, Headers]) Close() error {
+	return p.client.Close()
 }

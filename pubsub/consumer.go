@@ -68,6 +68,9 @@ func CreateConsumer[T any, Attributes map[string]string](config providers.Config
 		subscription, err = client.CreateSubscription(ctx, subscriptionName, pubsub.SubscriptionConfig{
 			Topic: topic,
 		})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &Consumer[T]{
